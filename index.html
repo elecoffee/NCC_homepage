@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Circle Games</title>
+<style>
+  :root{
+    --bg:#fafafa; --panel:#fff; --ink:#111; --muted:#666; --line:#eaeaea; --brand:#111;
+    --card-w: 320px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif; color:var(--ink); background:var(--bg);}
+  
+  header{position:sticky; top:0; z-index:5; background:var(--panel); border-bottom:1px solid var(--line);}
+  .wrap{max-width:1200px; margin:0 auto; padding:16px;}
+  .head-row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+  .logo{font-weight:700; letter-spacing:.2px}
+  .search{flex:1; min-width:220px; display:flex; align-items:center; gap:8px; background:#f4f4f4; border:1px solid var(--line); border-radius:10px; padding:8px 12px}
+  .search input{border:0; outline:none; background:transparent; flex:1; font-size:14px}
+  .btn{border:1px solid var(--line); background:#fff; padding:8px 10px; border-radius:10px; cursor:pointer; font-size:13px}
+  .btn[data-active="true"]{background:black; color:#fff; border-color:black}
+ 
+  main{display:grid; grid-template-columns:280px 1fr; gap:16px; max-width:1200px; margin:0 auto; padding:16px;}
+  aside{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px; position:sticky; top:72px; height:max-content}
+  .sec{margin-bottom:16px}
+  .sec h3{margin:0 0 10px; font-size:14px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{font-size:12px; padding:6px 10px; border:1px solid var(--line); border-radius:999px; cursor:pointer; background:#fff}
+  .chip[data-active="true"]{background:black; color:#fff; border-color:black}
+  .range-row{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted)}
+  .range-row input{width:100%}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(var(--card-w),1fr)); gap:16px}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:14px; overflow:hidden; cursor:pointer; display:flex; flex-direction:column}
+  .thumb{aspect-ratio:16/10; background:linear-gradient(0deg,#efefef,#f7f7f7); display:grid; place-items:center}
+  .thumb span{font-size:12px; color:#bbb}
+  .card-body{padding:12px}
+  .title{font-weight:600; font-size:15px; margin-bottom:4px}
+  .meta{font-size:12px; color:var(--muted); display:flex; gap:8px; flex-wrap:wrap}
+  .price{margin-top:6px; font-weight:700; font-size:14px}
+  footer{border-top:1px solid var(--line); margin-top:24px}
+  .hide{display:none !important}
+  @media (max-width:980px){ main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap head-row">
+    <div class="logo">NCC </div>  //サイトロゴ
+    <div class="search">
+      <input id="q" type="search" placeholder="Search games…" />
+    </div>
+    <div class="head-row" role="group" aria-label="Sort">
+      <button class="btn" data-sort="new" data-active="true">New</button>
+      
+      <button class="btn" data-sort="rating">Rating</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <aside>
+    <div class="sec">
+      <h3>Genres</h3>
+      <div id="genres" class="chips"></div>
+    </div>
+
+    <div class="sec">
+      <h3>Platforms</h3>
+      <div id="platforms" class="chips"></div>
+    </div>
+
+    <div class="sec">
+      <h3>Players</h3>
+      <div id="players" class="chips"></div>
+    </div>
+  </aside>
+
+  <section>
+    <div id="grid" class="grid"></div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap" style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+    <small>&copy; 2025 NCC</small>
+    <small><a href="#">Terms</a> · <a href="#">Contact</a></small>
+  </div>
+</footer>
+
+<script>
+  // ---- サンプルデータ（運用時はJSON等に置き換えてOK） ----
+  const GAMES = [
+    {
+      id:"dim-gate",
+      title:"Dimensions Gate",
+      genre:["Puzzle","Edu","FPS-lite"],
+      platforms:["Windows","WebGL"],
+      players:["Solo","Co-op"],
+      rating:4.6, created:"2025-09-25",
+      thumb:"", // 空ならプレースホルダ
+      blurb:"四次元超立方体を歩いて学ぶ次元入門。"
+    },
+    {
+      id:"spring-saber",
+      title:"Spring Saber",
+      genre:["Action","Rhythm"],
+      platforms:["Windows"],
+      players:["Solo"],
+      rating:4.2, created:"2025-08-01",
+      thumb:"",
+      blurb:"軽快な斬撃と音ゲーの融合。"
+    },
+    {
+      id:"orb-rally",
+      title:"Orb Rally",
+      genre:["Racing"],
+      platforms:["Windows","Mac"],
+      players:["Versus","Online"],
+      rating:4.0, created:"2025-06-12",
+      thumb:"",
+      blurb:"物理ベースの球体レース。"
+    },
+    {
+      id:"novel-atelier",
+      title:"Novel Atelier",
+      genre:["VisualNovel","Edu"],
+      platforms:["WebGL","Mac"],
+      players:["Solo"],
+      rating:4.8, created:"2025-09-10",
+      thumb:"",
+      blurb:"表現技法を実験できるノベルツール。"
+    },
+    {
+      id:"rogue-lab",
+      title:"Rogue Lab",
+      genre:["Roguelike","Action"],
+      platforms:["Windows","Linux"],
+      players:["Solo"],
+      rating:4.1, created:"2025-07-19",
+      thumb:"",
+      blurb:"1コイン研究所脱出。"
+    },
+    {
+      id:"party-potion",
+      title:"Party Potion",
+      genre:["Party","Puzzle"],
+      platforms:["Windows","WebGL"],
+      players:["Local","Versus"],
+      rating:3.9, created:"2025-05-30",
+      thumb:"",
+      blurb:"材料を混ぜて爆笑クラフト。"
+    }
+  ];
+
+  // ---- フィルタUIの初期化 ----
+  const by = (k) => [...new Set(GAMES.flatMap(g => g[k]))].sort();
+  const GENRES = by("genre"), PLATFORMS = by("platforms"), PLAYERS = by("players");
+
+  const mkChips = (ids, mountId) => {
+    const el = document.getElementById(mountId);
+    ids.forEach(name=>{
+      const b = document.createElement("button");
+      b.className="chip"; b.textContent=name; b.dataset.value=name; b.dataset.active="false";
+      b.addEventListener("click", ()=>{ b.dataset.active = (b.dataset.active!=="true"); render() });
+      el.appendChild(b);
+    });
+  };
+  mkChips(GENRES, "genres");
+  mkChips(PLATFORMS, "platforms");
+  mkChips(PLAYERS, "players");
+
+  const priceRange = document.getElementById("priceMax");
+  const priceMaxVal = document.getElementById("priceMaxVal");
+  priceRange.addEventListener("input", ()=>{ priceMaxVal.textContent = priceRange.value; render() });
+
+  // ---- ソートUI ----
+  let SORT="new";
+  document.querySelectorAll('.btn[data-sort]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.btn[data-sort]').forEach(b=>b.dataset.active="false");
+      btn.dataset.active="true"; SORT = btn.dataset.sort; render();
+    });
+  });
+
+  // ---- 検索 ----
+  const q = document.getElementById("q");
+  q.addEventListener("input", ()=>render());
+
+  // ---- レンダリング ----
+  const grid = document.getElementById("grid");
+
+  function activeValues(scope){
+    return [...document.querySelectorAll(`#${scope} .chip[data-active="true"]`)].map(x=>x.dataset.value);
+  }
+
+  function applyFilters(list){
+    const qv = q.value.trim().toLowerCase();
+    const gsel = activeValues("genres");
+    const psel = activeValues("platforms");
+    const usel = activeValues("players");
+    const maxPrice = Number(priceRange.value);
+
+    return list.filter(item=>{
+      const matchesQ = !qv || (item.title.toLowerCase().includes(qv) || item.blurb.toLowerCase().includes(qv));
+      const matchesGenre = !gsel.length || gsel.every(g => item.genre.includes(g));
+      const matchesPlat  = !psel.length || psel.every(p => item.platforms.includes(p));
+      const matchesPlay  = !usel.length || usel.every(p => item.players.includes(p));
+      const matchesPrice = item.price <= maxPrice;
+      return matchesQ && matchesGenre && matchesPlat && matchesPlay && matchesPrice;
+    });
+  }
+
+  function applySort(list){
+    const byCreated = (a,b)=> new Date(b.created)-new Date(a.created);
+    const byPAsc = (a,b)=> (a.price - b.price) || byCreated(a,b);
+    const byPDesc = (a,b)=> (b.price - a.price) || byCreated(a,b);
+    const byRating = (a,b)=> (b.rating - a.rating) || byCreated(a,b);
+    return [...list].sort(SORT==="new"?byCreated: SORT==="price-asc"?byPAsc: SORT==="price-desc"?byPDesc: byRating);
+  }
+
+  function card(item){
+    const a = document.createElement("a");
+    a.href = `game.html?id=${encodeURIComponent(item.id)}`;
+    a.className="card"; a.setAttribute("aria-label", item.title);
+
+    const th = document.createElement("div");
+    th.className="thumb";
+    th.innerHTML = item.thumb ? `<img src="${item.thumb}" alt="" style="width:100%;height:100%;object-fit:cover">`
+                              : `<span>Thumbnail</span>`;
+    const body = document.createElement("div");
+    body.className="card-body";
+    body.innerHTML = `
+      <div class="title">${item.title}</div>
+      <div class="meta">
+        <span>${item.genre.join(", ")}</span>
+        <span>· ${item.platforms.join(", ")}</span>
+        <span>· ★ ${item.rating.toFixed(1)}</span>
+      </div>
+      <div class="price">${item.price===0 ? "Free" : "$"+item.price}</div>
+    `;
+    a.appendChild(th); a.appendChild(body);
+    return a;
+  }
+
+  function render(){
+    const filtered = applyFilters(GAMES);
+    const sorted = applySort(filtered);
+    grid.innerHTML="";
+    if(sorted.length===0){
+      const d=document.createElement("div");
+      d.style.color="#777"; d.textContent="No results.";
+      grid.appendChild(d); return;
+    }
+    sorted.forEach(item=> grid.appendChild(card(item)));
+  }
+
+  // 初期描画
+  render();
+</script>
+</body>
+</html>
+
